@@ -1,6 +1,6 @@
 import sys
 from typing import Optional
-
+import json as js
 import click
 from rich.console import Console
 
@@ -48,14 +48,24 @@ def status(hap_alias, verbose):
 @cli.command(short_help="Same as a status")
 @click.argument("hap_alias", metavar="hap", required=False)
 @click.option("-v", "--verbose", is_flag=True, default=False)
-def show(hap_alias, verbose):
-    _status(hap_alias, verbose)
+@click.option("--json", is_flag=True, default=False)
+def show(hap_alias, verbose, json):
+    _status(hap_alias, verbose, json)
 
 
-def _status(hap_alias: Optional[str] = None, verbose: bool = False):
+def _status(hap_alias: Optional[str] = None, verbose: bool = False, json:bool=False):
     if hap_alias is not None:
         hap = get_or_exit(hap_alias)
-        hapless.show(hap, verbose=verbose)
+        if not json:
+            hapless.show(hap, verbose=verbose)
+        else:
+            print(js.dumps({
+                "status":hap.status,
+                "pid":str(hap.pid),
+                "command":hap.cmd,
+                "runtime": hap.runtime
+            }))
+    
     else:
         haps = hapless.get_haps()
         hapless.stats(haps, verbose=verbose)
